@@ -3,8 +3,8 @@ const TelegramBot = require('node-telegram-bot-api')
 
 const app = express()
 
-const TOKEN = "8566315145:AAHeFYExxZxBCj2PgtGzYk8qc4ZHaJY0VYY"
-const URL = "https://frankbuger.onrender.com" // keyin qo'yamiz
+const TOKEN = "8771407234:AAFlVx8y1S7lrI8Zz0yThThR2JW0iMkDtwc"
+const URL = "https://frankbuger.onrender.com"
 
 // Webhook mode
 const bot = new TelegramBot(TOKEN)
