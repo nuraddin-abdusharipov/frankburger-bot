@@ -14,6 +14,7 @@ app.use(express.json())
 
 // Telegram webhook
 app.post(`/bot${TOKEN}`, (req, res) => {
+    console.log("Webhook keldi!") // DEBUG
     bot.processUpdate(req.body)
     res.sendStatus(200)
 })
