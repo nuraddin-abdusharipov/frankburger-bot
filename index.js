@@ -1,44 +1,93 @@
-const express = require('express')
-const { Telegraf } = require('telegraf')
+const express = require("express");
+const { Telegraf, Markup } = require("telegraf");
+const fs = require("fs");
+const path = require("path");
+const cors = require("cors");
 
-const app = express()
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-const TOKEN = "8771407234:AAFlVx8y1S7lrI8Zz0yThThR2JW0iMkDtwc"
-const URL = "https://frankbuger.onrender.com"
+// ⚠️ TOKENNI keyin .env ga o‘tkazganing yaxshi
+const BOT_TOKEN = "8771407234:AAFlVx8y1S7lrI8Zz0yThThR2JW0iMkDtwc";
 
-const bot = new Telegraf(TOKEN)
+if (!BOT_TOKEN) {
+  throw new Error("BOT_TOKEN topilmadi.");
+}
 
-// /start komandasi
-bot.start((ctx) => {
-    ctx.reply("Ilovani oching 👇", {
-        reply_markup: {
-            inline_keyboard: [
-                [
-                    {
-                        text: "🍔 Ilovani ochish",
-                        web_app: {
-                            url: "https://your-app.netlify.app"
-                        }
-                    }
-                ]
-            ]
+const bot = new Telegraf(BOT_TOKEN);
+
+// Middlewares
+app.use(cors());
+app.use(express.json());
+
+// (agar logo ishlatmoqchi bo‘lsang)
+const logo = path.join(__dirname, "logo.png");
+
+// Routes
+app.get("/", (req, res) => {
+  res.json({
+    status: "online",
+    time: new Date(),
+    message: "Backend is running",
+  });
+});
+
+app.get("/health", (req, res) => {
+  res.json({
+    status: "healthy",
+    uptime: process.uptime(),
+  });
+});
+
+// Telegram /start
+bot.start(async (ctx) => {
+  try {
+    const keyboard = Markup.inlineKeyboard([
+      [Markup.button.webApp("Ochish", "https://frankburger.netlify.app/")],
+    ]);
+
+    const text = `Salom, ${ctx.from.first_name}! Frank Burger botiga xush kelibsiz!`;
+
+    if (fs.existsSync(logo)) {
+      await ctx.replyWithPhoto(
+        { source: fs.readFileSync(logo) },
+        {
+          caption: text,
+          ...keyboard,
         }
-    })
-})
+      );
+    } else {
+      await ctx.reply(text, keyboard);
+    }
+  } catch (err) {
+    console.error("❌ /start error:", err);
+  }
+});
 
-// webhook middleware
-app.use(bot.webhookCallback(`/bot${TOKEN}`))
-
-// test route
-app.get('/', (req, res) => {
-    res.send("Bot ishlayapti ✅")
-})
-
-const PORT = process.env.PORT || 3000
-
+// Server start
 app.listen(PORT, async () => {
-    console.log("Server running...")
+  console.log(`🚀 Server running on port ${PORT}`);
 
-    await bot.telegram.setWebhook(`${URL}/bot${TOKEN}`)
-    console.log("Webhook o‘rnatildi ✅")
-})
+  try {
+    const me = await bot.telegram.getMe();
+    console.log(`✅ Telegram connected: @${me.username}`);
+
+    await bot.telegram.deleteWebhook();
+    console.log("✅ Old webhook deleted");
+
+    await bot.launch();
+    console.log("🤖 Bot started successfully");
+  } catch (err) {
+    console.error("❌ Bot launch error:", err);
+  }
+});
+
+process.once("SIGINT", () => {
+  bot.stop("SIGINT");
+  process.exit(0);
+});
+
+process.once("SIGTERM", () => {
+  bot.stop("SIGTERM");
+  process.exit(0);
+});
