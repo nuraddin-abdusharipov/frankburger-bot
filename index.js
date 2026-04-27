@@ -8,7 +8,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ⚠️ TOKENNI keyin .env ga o‘tkazganing yaxshi
-const BOT_TOKEN = "8771407234:AAFlVx8y1S7lrI8Zz0yThThR2JW0iMkDtwc";
+const BOT_TOKEN = "8771407234:AAGculoSuCYdIhsG1uzgCKTY37HP608uXzo";
 
 if (!BOT_TOKEN) {
   throw new Error("BOT_TOKEN topilmadi.");
